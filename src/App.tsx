@@ -7,21 +7,23 @@ import { TodoList } from './components/TodoList';
 import { TodoFilter } from './components/TodoFilter';
 import { TodoModal } from './components/TodoModal';
 import { Loader } from './components/Loader';
-import { getData } from './utils/httpClient';
 import { Todo } from './types/Todo';
+import { getTodos } from './api';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [userId, setUserId] = useState(0);
+  const [selectedTodo, setSelectedTodo] = useState<number>(0);
   const [todo, setTodo] = useState<Todo | undefined>();
   const [allTodo, setAllTodo] = useState<Todo[]>([]);
+  const [inputValue, setInputVale] = useState('');
+  const [selectValue, setSelectValue] = useState('all');
 
   useEffect(() => {
     setLoading(true);
     setErrorMessage('');
-    getData<Todo[]>('/todos.json')
+    getTodos()
       .then(todosFromServer => {
         setTodos(todosFromServer);
         setAllTodo(todosFromServer);
@@ -34,6 +36,46 @@ export const App: React.FC = () => {
       });
   }, []);
 
+  useEffect(() => {
+    switch (selectValue) {
+      case 'all':
+        setAllTodo(
+          [...todos].filter(todoForFillter => {
+            return todoForFillter.title
+              .toLowerCase()
+              .includes(inputValue.toLowerCase());
+          }),
+        );
+        break;
+      case 'active':
+        setAllTodo(
+          [...todos]
+            .filter(todoForFillter => {
+              return todoForFillter.completed === false;
+            })
+            .filter(todoForFillter => {
+              return todoForFillter.title
+                .toLowerCase()
+                .includes(inputValue.toLowerCase());
+            }),
+        );
+        break;
+      case 'completed':
+        setAllTodo(
+          [...todos]
+            .filter(todoForFillter => {
+              return todoForFillter.completed === true;
+            })
+            .filter(todoForFillter => {
+              return todoForFillter.title
+                .toLowerCase()
+                .includes(inputValue.toLowerCase());
+            }),
+        );
+        break;
+    }
+  }, [selectValue, inputValue]);
+
   return (
     <>
       <div className="section">
@@ -42,21 +84,34 @@ export const App: React.FC = () => {
             <h1 className="title">Todos:</h1>
 
             <div className="block">
-              <TodoFilter todos={todos} setAllTodo={setAllTodo} />
+              <TodoFilter
+                setSelectValue={setSelectValue}
+                setInputVale={setInputVale}
+                selectValue={selectValue}
+                inputValue={inputValue}
+              />
             </div>
 
             <div className="block">
               {loading && <Loader />}
               {allTodo.length > 0 && !errorMessage && (
-                <TodoList todos={allTodo} getId={setUserId} getTodo={setTodo} />
+                <TodoList
+                  todos={allTodo}
+                  onSelectUserId={setSelectedTodo}
+                  onSelectTodo={setTodo}
+                />
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {userId && todo && (
-        <TodoModal userId={userId} getId={setUserId} todo={todo} />
+      {selectedTodo && todo && (
+        <TodoModal
+          userId={selectedTodo}
+          onSelectUserId={setSelectedTodo}
+          todo={todo}
+        />
       )}
     </>
   );

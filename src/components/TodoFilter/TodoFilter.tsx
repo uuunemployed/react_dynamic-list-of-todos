@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Todo } from '../../types/Todo';
-
 type Props = {
-  todos: Todo[];
-  setAllTodo: (todos: Todo[]) => void;
+  setSelectValue: (value: string) => void;
+  setInputVale: (value: string) => void;
+  selectValue: string;
+  inputValue: string;
 };
 
-export const TodoFilter: React.FC<Props> = ({ todos, setAllTodo }) => {
-  const [inputValue, setInputVale] = useState('');
-  const [selectValue, setSelectValue] = useState('all');
-
+export const TodoFilter: React.FC<Props> = ({
+  setInputVale,
+  setSelectValue,
+  selectValue,
+  inputValue,
+}) => {
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputVale(event.target.value);
   };
@@ -17,44 +18,6 @@ export const TodoFilter: React.FC<Props> = ({ todos, setAllTodo }) => {
   const handleSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectValue(event.target.value);
   };
-
-  useEffect(() => {
-    switch (selectValue) {
-      case 'all':
-        setAllTodo(
-          [...todos].filter(todo => {
-            return todo.title.toLowerCase().includes(inputValue.toLowerCase());
-          }),
-        );
-        break;
-      case 'active':
-        setAllTodo(
-          [...todos]
-            .filter(todo => {
-              return todo.completed === false;
-            })
-            .filter(todo => {
-              return todo.title
-                .toLowerCase()
-                .includes(inputValue.toLowerCase());
-            }),
-        );
-        break;
-      case 'completed':
-        setAllTodo(
-          [...todos]
-            .filter(todo => {
-              return todo.completed === true;
-            })
-            .filter(todo => {
-              return todo.title
-                .toLowerCase()
-                .includes(inputValue.toLowerCase());
-            }),
-        );
-        break;
-    }
-  }, [selectValue, inputValue]);
 
   return (
     <form className="field has-addons">

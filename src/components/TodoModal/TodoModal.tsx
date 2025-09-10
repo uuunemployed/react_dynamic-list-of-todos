@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from '../Loader';
-import { getData } from '../../utils/httpClient';
+import { getUser } from './../../api';
 import { User } from '../../types/User';
 import { Todo } from '../../types/Todo';
 
 type Props = {
   userId: number;
-  getId: (id: number) => void;
+  onSelectUserId: (id: number) => void;
   todo: Todo;
 };
 
-export const TodoModal: React.FC<Props> = ({ userId, getId, todo }) => {
+export const TodoModal: React.FC<Props> = ({
+  userId,
+  onSelectUserId,
+  todo,
+}) => {
   const [user, setUser] = useState<User | undefined>();
 
   useEffect(() => {
-    getData<User>(`/users/${String(userId)}.json`).then(userFromServer => {
+    getUser(userId).then(userFromServer => {
       if (userFromServer) {
         setUser(userFromServer);
       }
@@ -43,7 +47,7 @@ export const TodoModal: React.FC<Props> = ({ userId, getId, todo }) => {
               className="delete"
               data-cy="modal-close"
               onClick={() => {
-                getId(0);
+                onSelectUserId(0);
               }}
             />
           </header>
