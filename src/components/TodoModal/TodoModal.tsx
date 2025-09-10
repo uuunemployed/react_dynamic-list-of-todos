@@ -6,14 +6,16 @@ import { Todo } from '../../types/Todo';
 
 type Props = {
   userId: number;
-  onSelectUserId: (id: number) => void;
+  setUserId: (id: number | null) => void;
   todo: Todo;
+  setSelectedTodoId: (id: number | null) => void;
 };
 
 export const TodoModal: React.FC<Props> = ({
   userId,
-  onSelectUserId,
+  setUserId,
   todo,
+  setSelectedTodoId,
 }) => {
   const [user, setUser] = useState<User | undefined>();
 
@@ -24,6 +26,11 @@ export const TodoModal: React.FC<Props> = ({
       }
     });
   }, [userId]);
+
+  const handleButtonClick = () => {
+    setUserId(null);
+    setSelectedTodoId(null);
+  };
 
   return (
     <div className="modal is-active" data-cy="modal">
@@ -38,7 +45,7 @@ export const TodoModal: React.FC<Props> = ({
               className="modal-card-title has-text-weight-medium"
               data-cy="modal-header"
             >
-              {`Todo #${todo?.id}`}
+              {`Todo #${todo.id}`}
             </div>
 
             {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
@@ -46,15 +53,13 @@ export const TodoModal: React.FC<Props> = ({
               type="button"
               className="delete"
               data-cy="modal-close"
-              onClick={() => {
-                onSelectUserId(0);
-              }}
+              onClick={handleButtonClick}
             />
           </header>
 
           <div className="modal-card-body">
             <p className="block" data-cy="modal-title">
-              {todo?.title}
+              {todo.title}
             </p>
 
             <p className="block" data-cy="modal-user">

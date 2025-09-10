@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -14,67 +14,41 @@ export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [selectedTodo, setSelectedTodo] = useState<number>(0);
-  const [todo, setTodo] = useState<Todo | undefined>();
-  const [allTodo, setAllTodo] = useState<Todo[]>([]);
-  const [inputValue, setInputVale] = useState('');
+  const [selectUserId, setSelectUserId] = useState<number | null>(null);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | undefined>();
+  const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null);
+  const [inputValue, setInputValue] = useState('');
   const [selectValue, setSelectValue] = useState('all');
 
   useEffect(() => {
     setLoading(true);
     setErrorMessage('');
     getTodos()
-      .then(todosFromServer => {
-        setTodos(todosFromServer);
-        setAllTodo(todosFromServer);
-      })
-      .catch(() => {
-        setErrorMessage('try again later');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .then(setTodos)
+      .catch(() => setErrorMessage('try again later'))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    switch (selectValue) {
-      case 'all':
-        setAllTodo(
-          [...todos].filter(todoForFillter => {
-            return todoForFillter.title
-              .toLowerCase()
-              .includes(inputValue.toLowerCase());
-          }),
-        );
-        break;
-      case 'active':
-        setAllTodo(
-          [...todos]
-            .filter(todoForFillter => {
-              return todoForFillter.completed === false;
-            })
-            .filter(todoForFillter => {
-              return todoForFillter.title
-                .toLowerCase()
-                .includes(inputValue.toLowerCase());
-            }),
-        );
-        break;
-      case 'completed':
-        setAllTodo(
-          [...todos]
-            .filter(todoForFillter => {
-              return todoForFillter.completed === true;
-            })
-            .filter(todoForFillter => {
-              return todoForFillter.title
-                .toLowerCase()
-                .includes(inputValue.toLowerCase());
-            }),
-        );
-        break;
-    }
-  }, [selectValue, inputValue]);
+    setSelectUserId(selectedTodo?.userId ?? null);
+    setSelectedTodoId(selectedTodo?.id ?? null);
+  }, [selectedTodo]);
+
+  const filteredTodos = useMemo(() => {
+    return todos
+      .filter(todoForFillter => {
+        if (selectValue === 'active') {
+          return !todoForFillter.completed;
+        } else if (selectValue === 'completed') {
+          return todoForFillter.completed;
+        } else {
+          return true;
+        }
+      })
+      .filter(todoForFillter =>
+        todoForFillter.title.toLowerCase().includes(inputValue.toLowerCase()),
+      );
+  }, [todos, selectValue, inputValue]);
 
   return (
     <>
@@ -85,8 +59,8 @@ export const App: React.FC = () => {
 
             <div className="block">
               <TodoFilter
-                setSelectValue={setSelectValue}
-                setInputVale={setInputVale}
+                onStatusChange={setSelectValue}
+                onQueryChange={setInputValue}
                 selectValue={selectValue}
                 inputValue={inputValue}
               />
@@ -94,11 +68,11 @@ export const App: React.FC = () => {
 
             <div className="block">
               {loading && <Loader />}
-              {allTodo.length > 0 && !errorMessage && (
+              {filteredTodos.length > 0 && !errorMessage && (
                 <TodoList
-                  todos={allTodo}
-                  onSelectUserId={setSelectedTodo}
-                  onSelectTodo={setTodo}
+                  selectedTodoId={selectedTodoId}
+                  todos={filteredTodos}
+                  setSelectedTodo={setSelectedTodo}
                 />
               )}
             </div>
@@ -106,11 +80,12 @@ export const App: React.FC = () => {
         </div>
       </div>
 
-      {selectedTodo && todo && (
+      {selectUserId != null && selectedTodo != undefined && (
         <TodoModal
-          userId={selectedTodo}
-          onSelectUserId={setSelectedTodo}
-          todo={todo}
+          userId={selectUserId}
+          setUserId={setSelectUserId}
+          todo={selectedTodo}
+          setSelectedTodoId={setSelectedTodoId}
         />
       )}
     </>

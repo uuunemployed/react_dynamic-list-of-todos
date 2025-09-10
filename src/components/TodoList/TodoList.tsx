@@ -1,16 +1,17 @@
 import React from 'react';
 import { Todo } from '../../types/Todo';
+import classNames from 'classnames';
 
 type Props = {
+  selectedTodoId: number | null;
   todos: Todo[];
-  onSelectUserId: (id: number) => void;
-  onSelectTodo: (todo: Todo) => void;
+  setSelectedTodo: (todo: Todo) => void;
 };
 
 export const TodoList: React.FC<Props> = ({
+  selectedTodoId,
   todos,
-  onSelectUserId,
-  onSelectTodo,
+  setSelectedTodo,
 }) => {
   return (
     <table className="table is-narrow is-fullwidth">
@@ -30,38 +31,57 @@ export const TodoList: React.FC<Props> = ({
       <tbody>
         {todos.map(todo => {
           return (
-            <tr data-cy="todo" className="" key={todo.id}>
+            <tr
+              data-cy="todo"
+              className={classNames({
+                'is-selected': todo.id === selectedTodoId,
+              })}
+              key={todo.id}
+            >
               <td className="is-vcentered">{todo.id}</td>
               <td className="is-vcentered">
                 {todo.completed && (
-                  <span className="icon">
+                  <span data-cy="iconCompleted" className="icon">
                     <i className="fas fa-check" />
                   </span>
                 )}
               </td>
               <td className="is-vcentered is-expanded">
                 <p
-                  className={
-                    todo.completed ? 'has-text-success' : 'has-text-danger'
-                  }
+                  className={classNames('base-class', {
+                    'has-text-success': todo.completed,
+                    'has-text-danger': !todo.completed,
+                  })}
                 >
+                  {todo.title}
+
                   {todo.title}
                 </p>
               </td>
               <td className="has-text-right is-vcentered">
-                <button
-                  data-cy="selectButton"
-                  className="button"
-                  type="button"
-                  onClick={() => {
-                    onSelectUserId(todo.userId);
-                    onSelectTodo(todo);
-                  }}
-                >
-                  <span className="icon">
-                    <i className="far fa-eye" />
-                  </span>
-                </button>
+                {selectedTodoId === todo.id ? (
+                  <button
+                    data-cy="selectButton"
+                    className="button"
+                    type="button"
+                    onClick={() => {
+                      setSelectedTodo(todo);
+                    }}
+                  >
+                    Hide
+                  </button>
+                ) : (
+                  <button
+                    data-cy="selectButton"
+                    className="button"
+                    type="button"
+                    onClick={() => {
+                      setSelectedTodo(todo);
+                    }}
+                  >
+                    Show
+                  </button>
+                )}
               </td>
             </tr>
           );

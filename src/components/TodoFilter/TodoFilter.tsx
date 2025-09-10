@@ -1,22 +1,22 @@
 type Props = {
-  setSelectValue: (value: string) => void;
-  setInputVale: (value: string) => void;
+  onStatusChange: (value: string) => void;
+  onQueryChange: (value: string) => void;
   selectValue: string;
   inputValue: string;
 };
 
 export const TodoFilter: React.FC<Props> = ({
-  setInputVale,
-  setSelectValue,
+  onStatusChange,
+  onQueryChange,
   selectValue,
   inputValue,
 }) => {
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputVale(event.target.value);
+    onQueryChange(event.target.value);
   };
 
   const handleSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectValue(event.target.value);
+    onStatusChange(event.target.value);
   };
 
   return (
@@ -56,7 +56,7 @@ export const TodoFilter: React.FC<Props> = ({
               type="button"
               className="delete"
               onClick={() => {
-                setInputVale('');
+                onQueryChange('');
               }}
             />
           )}
